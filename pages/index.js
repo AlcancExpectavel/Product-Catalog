@@ -1,7 +1,3 @@
-// =======================================================
-// HOMEPAGE
-// =======================================================
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Layout from "../components/Layout";
@@ -16,15 +12,12 @@ export default function Home({ produtosDestaque }) {
       title="Início"
       description={`Catálogo oficial de produtos ${BRAND_NAME}. Encontra tudo o que precisas.`}
     >
-      {/* ── Hero ── */}
       <section className="bg-gradient-to-br from-brand-700 to-brand-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
           <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 tracking-tight">
-            {/* Substitui pelo slogan da tua empresa */}
             Qualidade que podes confiar
           </h1>
           <p className="text-brand-100 text-lg sm:text-xl max-w-2xl mx-auto mb-8">
-            {/* Substitui pela descrição da empresa */}
             Descobre o nosso catálogo completo de produtos pensados para o teu conforto e estilo de vida.
           </p>
           <Link href="/produtos" className="inline-flex items-center gap-2 bg-white text-brand-700 font-bold px-8 py-3 rounded-xl hover:bg-brand-50 transition-colors text-base">
@@ -36,7 +29,6 @@ export default function Home({ produtosDestaque }) {
         </div>
       </section>
 
-      {/* ── Destaques ── */}
       {produtosDestaque.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="flex items-end justify-between mb-8">
@@ -62,7 +54,6 @@ export default function Home({ produtosDestaque }) {
         </section>
       )}
 
-      {/* ── Porquê nós ── */}
       <section className="bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-12">Porquê escolher-nos?</h2>
@@ -101,7 +92,6 @@ export default function Home({ produtosDestaque }) {
   );
 }
 
-// Carrega os primeiros 8 produtos para a homepage (Server-Side Rendering)
 export async function getServerSideProps() {
   try {
     const todos = await getProdutos();

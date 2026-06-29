@@ -2,14 +2,14 @@
 import Link from "next/link";
 import Image from "next/image";
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, compact = false }) {
   const { id, nome, descricaoCurta, imagens, categoria, sku } = product;
   const imagem = imagens?.[0] || null;
 
   return (
     <Link href={`/produto/${id}`} className="card group hover:shadow-md transition-shadow duration-200 flex flex-col">
       {/* Imagem */}
-      <div className="relative bg-gray-100 aspect-square overflow-hidden">
+      <div className={`relative bg-gray-100 overflow-hidden ${compact ? "aspect-[4/3]" : "aspect-square"}`}>
         {imagem ? (
           <Image
             src={imagem}

@@ -2,10 +2,11 @@
 // PÁGINA DE DETALHE DO PRODUTO
 // =======================================================
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Layout from "../../components/Layout";
+import ProductCard from "../../components/ProductCard";
 import { getProduto, getProdutos } from "../../lib/produtos";
 
 // Ícones de marketplace — adiciona/remove conforme necessário
@@ -30,7 +31,33 @@ const MARKETPLACES = [
   },
 ];
 
-export default function PaginaProduto({ produto }) {
+function Accordion({ titulo, children }) {
+  const [aberto, setAberto] = useState(false);
+  return (
+    <div className="border border-gray-200 rounded-xl overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setAberto(!aberto)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors"
+      >
+        <span className="font-semibold text-gray-900">{titulo}</span>
+        <svg
+          className={`w-5 h-5 text-gray-400 transition-transform duration-200 shrink-0 ${aberto ? "rotate-180" : ""}`}
+          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {aberto && (
+        <div className="px-5 pb-5 border-t border-gray-100">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function PaginaProduto({ produto, produtosRelacionados = [], crossellsNaoEncontrados = [] }) {
   const [imagemAtiva, setImagemAtiva] = useState(0);
 
   if (!produto) {
@@ -49,7 +76,7 @@ export default function PaginaProduto({ produto }) {
   const {
     nome, sku, categoria, descricao, descricaoCurta,
     imagens = [], caracteristicas = [], inclui = [],
-    crossells = [],
+    perfeitoPara = [], parametrosTecnicos = [], dimensoes = [], crossells = [],
   } = produto;
 
   const temLinks = MARKETPLACES.some((m) => produto[m.chave]);
@@ -184,6 +211,89 @@ export default function PaginaProduto({ produto }) {
                 </ul>
               </div>
             )}
+
+            {/* Accordions */}
+            <div className="space-y-2 mt-2">
+              {perfeitoPara.length > 0 && (
+                <Accordion titulo="Perfeito para">
+                  <ul className="space-y-2 mt-3">
+                    {perfeitoPara.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                        <svg className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </Accordion>
+              )}
+
+              {parametrosTecnicos.length > 0 && (
+                <Accordion titulo="Parâmetros Técnicos">
+                  <dl className="mt-3 space-y-2">
+                    {parametrosTecnicos.map((item, i) => {
+                      const [chave, ...resto] = item.split(":");
+                      const valor = resto.join(":").trim();
+                      return valor ? (
+                        <div key={i} className="flex gap-2 text-sm">
+                          <dt className="font-medium text-gray-700 shrink-0">{chave.trim()}:</dt>
+                          <dd className="text-gray-600">{valor}</dd>
+                        </div>
+                      ) : (
+                        <div key={i} className="text-sm text-gray-600">{item}</div>
+                      );
+                    })}
+                  </dl>
+                </Accordion>
+              )}
+
+              {dimensoes.length > 0 && (
+                <Accordion titulo="Dimensões">
+                  <dl className="mt-3 space-y-2">
+                    {dimensoes.map((item, i) => {
+                      // Tenta detectar formato "N unidade" com unidade reconhecida (ex: "2 kg", "55 cm")
+                      const matchUnidade = item.trim().match(/^([\d.,]+)\s*(kg|g|lbs?|cm|mm|m)$/i);
+                      if (matchUnidade) {
+                        const [, val, unidade] = matchUnidade;
+                        const uLower = unidade.toLowerCase();
+                        const label = /^(kg|g|lbs?)$/i.test(uLower) ? "Peso" : "Altura";
+                        return (
+                          <div key={i} className="flex gap-2 text-sm">
+                            <dt className="font-medium text-gray-700 shrink-0 w-28">{label}:</dt>
+                            <dd className="text-gray-600">{val} {unidade}</dd>
+                          </div>
+                        );
+                      }
+                      // Tenta detectar formato "N × N × N [unidade]" ou "N x N x N [unidade]"
+                      const matchTres = item.trim().match(/^([\d.,]+)\s*[×x]\s*([\d.,]+)\s*[×x]\s*([\d.,]+)\s*(.*)$/i);
+                      if (matchTres) {
+                        const [, l, a, p, unidade] = matchTres;
+                        const u = unidade.trim();
+                        const labels = ["Largura", "Altura", "Profundidade"];
+                        return [l, a, p].map((val, j) => (
+                          <div key={`${i}-${j}`} className="flex gap-2 text-sm">
+                            <dt className="font-medium text-gray-700 shrink-0 w-28">{labels[j]}:</dt>
+                            <dd className="text-gray-600">{val}{u ? ` ${u}` : ""}</dd>
+                          </div>
+                        ));
+                      }
+                      // Tenta formato "Chave: Valor"
+                      const [chave, ...resto] = item.split(":");
+                      const valor = resto.join(":").trim();
+                      return valor ? (
+                        <div key={i} className="flex gap-2 text-sm">
+                          <dt className="font-medium text-gray-700 shrink-0 w-28">{chave.trim()}:</dt>
+                          <dd className="text-gray-600">{valor}</dd>
+                        </div>
+                      ) : (
+                        <div key={i} className="text-sm text-gray-600">{item}</div>
+                      );
+                    })}
+                  </dl>
+                </Accordion>
+              )}
+            </div>
           </div>
         </div>
 
@@ -197,15 +307,26 @@ export default function PaginaProduto({ produto }) {
           </div>
         )}
 
-        {/* ── Crossells ── */}
-        {crossells.length > 0 && (
-          <div className="mt-10">
-            <h2 className="text-xl font-bold text-gray-900 mb-5">Produtos relacionados</h2>
-            <div className="flex gap-3 flex-wrap">
-              {crossells.map((sku, i) => (
-                <span key={i} className="bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full">
-                  {sku}
-                </span>
+        {/* ── Produtos relacionados ── */}
+        {(produtosRelacionados.length > 0 || crossellsNaoEncontrados.length > 0) && (
+          <div className="mt-12">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Produtos relacionados</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {produtosRelacionados.map((p) => (
+                <ProductCard key={p.id} product={p} compact />
+              ))}
+              {crossellsNaoEncontrados.map((sku) => (
+                <div key={sku} className="card p-6 flex flex-col items-center justify-center text-center gap-3 min-h-[160px]">
+                  <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                    <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Ref: {sku}</p>
+                    <p className="text-sm text-gray-500">Em breve no catálogo</p>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -226,13 +347,32 @@ export async function getServerSideProps({ params }) {
     const produto = await getProduto(params.id);
     if (!produto) return { notFound: true };
 
+    const serializar = (p) => ({
+      ...p,
+      criadoEm: p.criadoEm?.toMillis?.() ?? null,
+      atualizadoEm: p.atualizadoEm?.toMillis?.() ?? null,
+    });
+
+    // Procura os produtos relacionados pelo SKU
+    // Se existirem no catálogo → card clicável; se não → mostra o SKU como badge
+    let produtosRelacionados = [];
+    let crossellsNaoEncontrados = [];
+    if (produto.crossells?.length > 0) {
+      const todos = await getProdutos();
+      // Extrai só o SKU (antes de qualquer espaço ou parêntese)
+      const extrairSku = (s) => s.trim().split(/[\s(]/)[0].toLowerCase();
+      const crossellsNorm = produto.crossells.map(extrairSku);
+      const encontrados = todos.filter((p) => p.sku && crossellsNorm.includes(p.sku.trim().toLowerCase()) && p.id !== params.id);
+      produtosRelacionados = encontrados.slice(0, 3).map(serializar);
+      const skusEncontrados = encontrados.map((p) => p.sku.trim().toLowerCase());
+      crossellsNaoEncontrados = produto.crossells.filter((s) => !skusEncontrados.includes(extrairSku(s))).slice(0, 3 - produtosRelacionados.length);
+    }
+
     return {
       props: {
-        produto: {
-          ...produto,
-          criadoEm: produto.criadoEm?.toMillis?.() ?? null,
-          atualizadoEm: produto.atualizadoEm?.toMillis?.() ?? null,
-        },
+        produto: serializar(produto),
+        produtosRelacionados,
+        crossellsNaoEncontrados,
       },
     };
   } catch {
