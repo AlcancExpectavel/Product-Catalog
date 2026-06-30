@@ -12,6 +12,7 @@ import { auth } from "../../lib/firebase";
 import {
   getProdutos,
   getCategorias,
+  criarCategoria,
   criarProduto,
   atualizarProduto,
   removerProduto,
@@ -58,6 +59,7 @@ export default function AdminDashboard() {
   const [guardando, setGuardando] = useState(false);
   const [mensagem, setMensagem] = useState(null);
   const [confirmarRemover, setConfirmarRemover] = useState(null);
+  const [guardandoCategoria, setGuardandoCategoria] = useState(false);
 
   // Autenticação
   useEffect(() => {
@@ -141,12 +143,40 @@ export default function AdminDashboard() {
     setImagensExistentes((prev) => prev.filter((u) => u !== url));
   }
 
+  async function handleGuardarCategoria() {
+    const nome = form.categoria.trim();
+    if (!nome) return;
+    setGuardandoCategoria(true);
+    try {
+      await criarCategoria(nome);
+      const cats = await getCategorias();
+      setCategoriasExistentes(cats);
+      setNovaCategoria(false);
+      setMensagem({ tipo: "sucesso", texto: `Categoria "${nome}" guardada!` });
+    } catch {
+      setMensagem({ tipo: "erro", texto: "Erro ao guardar categoria." });
+    } finally {
+      setGuardandoCategoria(false);
+    }
+  }
+
   async function handleGuardar(e) {
     e.preventDefault();
     setGuardando(true);
     setMensagem(null);
 
     try {
+      // Verifica SKU duplicado (apenas ao criar, não ao editar)
+      if (!editId && form.sku.trim()) {
+        const skuNorm = form.sku.trim().toLowerCase();
+        const duplicado = produtos.find((p) => p.sku?.trim().toLowerCase() === skuNorm);
+        if (duplicado) {
+          setMensagem({ tipo: "erro", texto: `O SKU "${form.sku.trim()}" já existe no produto "${duplicado.nome}".` });
+          setGuardando(false);
+          return;
+        }
+      }
+
       // Converte campos multi-linha em arrays
       const dados = {
         nome: form.nome.trim(),
@@ -164,6 +194,9 @@ export default function AdminDashboard() {
         linkFnac: form.linkFnac.trim(),
         linkAmazon: form.linkAmazon.trim(),
       };
+
+      // Garante que a categoria existe no Firestore
+      if (dados.categoria) await criarCategoria(dados.categoria);
 
       let produtoId = editId;
 
@@ -423,17 +456,25 @@ export default function AdminDashboard() {
                             placeholder="Ex: Eletrónica, Jardim, Cozinha..."
                             autoFocus
                           />
+                          <button
+                            type="button"
+                            onClick={handleGuardarCategoria}
+                            disabled={!form.categoria.trim() || guardandoCategoria}
+                            className="btn-primary px-3 py-2 text-xs whitespace-nowrap disabled:opacity-50"
+                          >
+                            {guardandoCategoria ? "..." : "✓ Guardar"}
+                          </button>
                           {categoriasExistentes.length > 0 && (
                             <button
                               type="button"
                               onClick={() => { setNovaCategoria(false); setForm({ ...form, categoria: "" }); }}
                               className="btn-secondary px-3 py-2 text-xs whitespace-nowrap"
                             >
-                              ← Escolher existente
+                              ← Voltar
                             </button>
                           )}
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">Esta categoria será criada automaticamente ao guardar</p>
+                        <p className="text-xs text-gray-400 mt-1">Clica em "✓ Guardar" para criar a categoria imediatamente no Firestore.</p>
                       </div>
                     ) : (
                       <div className="flex gap-2">
@@ -490,7 +531,7 @@ export default function AdminDashboard() {
                     <textarea name="dimensoes" value={form.dimensoes} onChange={handleChange} rows={4} className="input-field resize-none" placeholder={"Largura: 28cm\nAltura: 32cm\nProfundidade: 20cm\nPeso: 1.6kg"} />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="label">Produtos relacionados / Crossells <span className="text-gray-400 font-normal">(um SKU por linha)</span></label>
+                    <label className="label">Produtos relacionados / Crossells <span className="text-gray-400 font-normal">(um SKU por linha, max 3)</span></label>
                     <textarea name="crossells" value={form.crossells} onChange={handleChange} rows={3} className="input-field resize-none" placeholder={"SKU428\nSKU400"} />
                   </div>
                 </div>
