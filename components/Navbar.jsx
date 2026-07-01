@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { getCategorias } from "../lib/produtos";
+import BrandIcon from "./BrandIcon";
 
-const BRAND_NAME = "[MARCA]";
+const BRAND_NAME = "Alcance Expectável";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -11,7 +12,23 @@ export default function Navbar() {
   const [pesquisa, setPesquisa] = useState("");
   const [categorias, setCategorias] = useState([]);
   const [lang, setLang] = useState("pt");
+  const [darkMode, setDarkMode] = useState(false);
   const router = useRouter();
+
+  // Inicializa modo escuro a partir do localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    const prefereDark = saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    setDarkMode(prefereDark);
+    document.documentElement.classList.toggle("dark", prefereDark);
+  }, []);
+
+  function toggleDark() {
+    const next = !darkMode;
+    setDarkMode(next);
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+  }
 
   useEffect(() => {
     getCategorias().then(setCategorias).catch(() => {});
@@ -62,7 +79,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40 shadow-sm">
 
         {/* Linha superior */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,10 +88,8 @@ export default function Navbar() {
             {/* Esquerda — Logo */}
             <div className="flex items-center">
               <Link href="/" className="flex items-center gap-2 group">
-                <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center shrink-0">
-                  <span className="text-white font-bold text-sm">{BRAND_NAME.charAt(0)}</span>
-                </div>
-                <span className="text-xl font-bold text-gray-900 group-hover:text-brand-600 transition-colors hidden sm:block">
+                <BrandIcon size={32} className="shrink-0" />
+                <span className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-brand-600 transition-colors hidden sm:block">
                   {BRAND_NAME}
                 </span>
               </Link>
@@ -89,7 +104,7 @@ export default function Navbar() {
                     value={pesquisa}
                     onChange={(e) => setPesquisa(e.target.value)}
                     placeholder="Procurar produtos..."
-                    className="w-full border border-gray-300 rounded-lg pl-4 pr-11 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
+                    className="w-full border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 rounded-lg pl-4 pr-11 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition"
                   />
                   <button type="submit" className="absolute right-0 top-0 h-full px-3 bg-brand-600 hover:bg-brand-700 text-white rounded-r-lg transition-colors">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,6 +117,15 @@ export default function Navbar() {
 
             {/* Direita — Idioma + Admin + Mobile menu */}
             <div className="flex items-center justify-end gap-1.5">
+              {/* Botão dark/light mode */}
+              <button
+                onClick={toggleDark}
+                title={darkMode ? "Modo claro" : "Modo escuro"}
+                className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 hover:border-brand-400 hover:bg-brand-50 dark:border-gray-700 dark:hover:bg-gray-800 transition-colors text-base"
+              >
+                {darkMode ? "☀️" : "🌙"}
+              </button>
+
               {/* Botão de idioma */}
               <button
                 onClick={handleLang}
@@ -145,7 +169,7 @@ export default function Navbar() {
         </div>
 
         {/* Linha de navegação desktop */}
-        <div className="hidden md:block border-t border-gray-100">
+        <div className="hidden md:block border-t border-gray-100 dark:border-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <nav className="flex items-center gap-2 h-11">
 
@@ -160,7 +184,7 @@ export default function Navbar() {
                 Categorias
               </button>
 
-              <div className="w-px h-5 bg-gray-200 mx-1" />
+              <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
 
               {navLinks.map((link) => (
                 <Link
@@ -168,8 +192,8 @@ export default function Navbar() {
                   href={link.href}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                     router.pathname === link.href
-                      ? "bg-brand-50 text-brand-700"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                      ? "bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400"
+                      : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
                   }`}
                 >
                   {link.label}
@@ -181,7 +205,7 @@ export default function Navbar() {
 
         {/* Menu mobile */}
         {menuOpen && (
-          <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-1">
+          <div className="md:hidden border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 space-y-1">
             <form onSubmit={handlePesquisa} className="mb-3">
               <div className="relative">
                 <input type="text" value={pesquisa} onChange={(e) => setPesquisa(e.target.value)} placeholder="Procurar produtos..." className="w-full border border-gray-300 rounded-lg pl-4 pr-11 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
@@ -195,7 +219,7 @@ export default function Navbar() {
               Categorias
             </button>
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className={`block px-4 py-2 rounded-lg text-sm font-medium ${router.pathname === link.href ? "bg-brand-50 text-brand-700" : "text-gray-600 hover:bg-gray-100"}`}>
+              <Link key={link.href} href={link.href} className={`block px-4 py-2 rounded-lg text-sm font-medium ${router.pathname === link.href ? "bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400" : "text-gray-600 hover:bg-gray-100"}`}>
                 {link.label}
               </Link>
             ))}
@@ -213,14 +237,12 @@ export default function Navbar() {
       )}
 
       {/* Painel lateral */}
-      <div className={`fixed top-0 left-0 h-full w-72 bg-white z-50 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <div className={`fixed top-0 left-0 h-full w-72 bg-white dark:bg-gray-900 z-50 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         {/* Cabeçalho do sidebar */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-brand-600 rounded-md flex items-center justify-center">
-              <span className="text-white font-bold text-xs">{BRAND_NAME.charAt(0)}</span>
-            </div>
-            <span className="font-bold text-gray-900">{BRAND_NAME}</span>
+            <BrandIcon size={28} className="shrink-0" />
+            <span className="font-bold text-gray-900 dark:text-white">{BRAND_NAME}</span>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,7 +252,7 @@ export default function Navbar() {
         </div>
 
         {/* Pesquisa no sidebar */}
-        <div className="px-4 py-3 border-b border-gray-100">
+        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
           <form onSubmit={(e) => { e.preventDefault(); if (pesquisa.trim()) { router.push(`/produtos?q=${encodeURIComponent(pesquisa.trim())}`); setPesquisa(""); setSidebarOpen(false); } }}>
             <div className="relative">
               <input
@@ -250,15 +272,15 @@ export default function Navbar() {
         </div>
 
         {/* Título */}
-        <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Categorias</h2>
+        <div className="px-5 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Categorias</h2>
         </div>
 
         {/* Lista de categorias */}
         <nav className="flex-1 overflow-y-auto py-2">
           <Link
             href="/produtos"
-            className="flex items-center justify-between px-5 py-3 text-sm font-semibold text-brand-600 hover:bg-brand-50 transition-colors border-b border-gray-50"
+            className="flex items-center justify-between px-5 py-3 text-sm font-semibold text-brand-600 hover:bg-brand-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-50 dark:border-gray-800"
           >
             Ver todos os produtos
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -273,7 +295,7 @@ export default function Navbar() {
               <Link
                 key={cat}
                 href={`/produtos?categoria=${encodeURIComponent(cat)}`}
-                className="flex items-center justify-between px-5 py-3.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition-colors border-b border-gray-50 group"
+                className="flex items-center justify-between px-5 py-3.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-brand-600 dark:hover:text-brand-400 transition-colors border-b border-gray-50 dark:border-gray-800 group"
               >
                 {cat}
                 <svg className="w-4 h-4 text-gray-300 group-hover:text-brand-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">

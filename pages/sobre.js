@@ -1,6 +1,6 @@
 import Layout from "../components/Layout";
 
-const BRAND_NAME = "[MARCA]";
+const BRAND_NAME = "Alcance Expectável";
 
 export default function Sobre() {
   return (

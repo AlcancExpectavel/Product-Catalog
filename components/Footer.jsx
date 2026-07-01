@@ -1,6 +1,7 @@
 import Link from "next/link";
+import BrandIcon from "./BrandIcon";
 
-const BRAND_NAME = "[MARCA]";
+const BRAND_NAME = "Alcance Expectável";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -12,9 +13,7 @@ export default function Footer() {
 
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">{BRAND_NAME.charAt(0)}</span>
-              </div>
+              <BrandIcon size={32} className="shrink-0" />
               <span className="text-white font-bold text-lg">{BRAND_NAME}</span>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed">

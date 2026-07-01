@@ -3,7 +3,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import Head from "next/head";
 
-const BRAND_NAME = "[MARCA]";
+const BRAND_NAME = "Alcance Expectável";
 
 export default function Layout({ children, title, description }) {
   const pageTitle = title ? `${title} | ${BRAND_NAME}` : BRAND_NAME;

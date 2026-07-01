@@ -8,8 +8,9 @@ import { useRouter } from "next/router";
 import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../lib/firebase";
 import Head from "next/head";
+import BrandIcon from "../../components/BrandIcon";
 
-const BRAND_NAME = "[MARCA]";
+const BRAND_NAME = "Alcance Expectável";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -57,8 +58,8 @@ export default function AdminLogin() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
-            <div className="w-12 h-12 bg-brand-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold text-xl">{BRAND_NAME.charAt(0)}</span>
+            <div className="flex justify-center mb-4">
+              <BrandIcon size={48} />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Área de Administração</h1>
             <p className="text-gray-500 text-sm mt-1">{BRAND_NAME}</p>

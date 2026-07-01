@@ -20,7 +20,7 @@ import {
 } from "../../lib/produtos";
 import Head from "next/head";
 
-const BRAND_NAME = "[MARCA]";
+const BRAND_NAME = "Alcance Expectável";
 
 // Campos de um produto — ajusta conforme necessário
 const FORM_INICIAL = {
@@ -531,7 +531,7 @@ export default function AdminDashboard() {
                     <textarea name="dimensoes" value={form.dimensoes} onChange={handleChange} rows={4} className="input-field resize-none" placeholder={"Largura: 28cm\nAltura: 32cm\nProfundidade: 20cm\nPeso: 1.6kg"} />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="label">Produtos relacionados / Crossells <span className="text-gray-400 font-normal">(um SKU por linha, max 3)</span></label>
+                    <label className="label">Produtos relacionados / Crossells <span className="text-gray-400 font-normal">(um SKU por linha)</span></label>
                     <textarea name="crossells" value={form.crossells} onChange={handleChange} rows={3} className="input-field resize-none" placeholder={"SKU428\nSKU400"} />
                   </div>
                 </div>
@@ -557,7 +557,6 @@ export default function AdminDashboard() {
                 <div className="card p-6">
                   <h2 className="font-semibold text-gray-900 mb-4">Imagens</h2>
 
-                  {/* Imagens já guardadas */}
                   {imagensExistentes.length > 0 && (
                     <div className="mb-4">
                       <p className="text-xs text-gray-400 mb-2">Imagens actuais (clica no × para remover)</p>
@@ -580,7 +579,6 @@ export default function AdminDashboard() {
                     </div>
                   )}
 
-                  {/* Upload novas imagens */}
                   <label className="block border-2 border-dashed border-gray-200 hover:border-brand-400 rounded-xl p-6 text-center cursor-pointer transition-colors">
                     <input type="file" accept="image/*" multiple onChange={handleFicheiros} className="hidden" />
                     <svg className="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,19 +1,64 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Layout from "../components/Layout";
 import ProductCard from "../components/ProductCard";
 import { getProdutos } from "../lib/produtos";
 
-const BRAND_NAME = "[MARCA]";
+const BRAND_NAME = "Alcance Expectável";
+
+function HeroBackground({ imagens }) {
+  const [ativos, setAtivos] = useState([0, 1, 2]);
+  const [fade, setFade] = useState(true);
+  const total = imagens.length;
+
+  useEffect(() => {
+    if (total < 1) return;
+    const interval = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setAtivos((prev) => prev.map((i) => (i + 3) % total));
+        setFade(true);
+      }, 400);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [total]);
+
+  if (total === 0) return null;
+
+  const visíveis = ativos.map((i) => imagens[i % total]).filter(Boolean);
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-around px-8 pointer-events-none overflow-hidden">
+      {visíveis.map((src, i) => (
+        <div
+          key={`${src}-${i}`}
+          className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-2xl overflow-hidden shrink-0"
+          style={{
+            opacity: fade ? (i === 1 ? 0.18 : 0.12) : 0,
+            transition: "opacity 0.4s ease",
+            transform: i === 1 ? "scale(1.1)" : "scale(1)",
+          }}
+        >
+          <img src={src} alt="" className="w-full h-full object-cover" />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function Home({ produtosDestaque }) {
+  const todasImagens = produtosDestaque
+    .flatMap((p) => p.imagens || [])
+    .filter(Boolean);
+
   return (
     <Layout
       title="Início"
       description={`Catálogo oficial de produtos ${BRAND_NAME}. Encontra tudo o que precisas.`}
     >
-      <section className="bg-gradient-to-br from-brand-700 to-brand-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+      <section className="relative bg-gradient-to-br from-brand-700 to-brand-900 text-white overflow-hidden">
+        <HeroBackground imagens={todasImagens} />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
           <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 tracking-tight">
             Qualidade que podes confiar
           </h1>
@@ -34,7 +79,7 @@ export default function Home({ produtosDestaque }) {
           <div className="flex items-end justify-between mb-8">
             <div>
               <p className="text-brand-600 font-semibold text-sm mb-1 uppercase tracking-wider">Catálogo</p>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Produtos em destaque</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Produtos em destaque</h2>
             </div>
             <Link href="/produtos" className="text-brand-600 hover:text-brand-700 font-semibold text-sm hidden sm:flex items-center gap-1">
               Ver todos
@@ -54,9 +99,9 @@ export default function Home({ produtosDestaque }) {
         </section>
       )}
 
-      <section className="bg-white border-t border-gray-100">
+      <section className="bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <h2 className="text-2xl font-bold text-center text-gray-900 mb-12">Porquê escolher-nos?</h2>
+          <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-12">Porquê escolher-nos?</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             {[
               {
@@ -76,13 +121,13 @@ export default function Home({ produtosDestaque }) {
               },
             ].map((item) => (
               <div key={item.titulo} className="text-center">
-                <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-12 h-12 bg-brand-100 dark:bg-brand-900/40 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <svg className="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">{item.titulo}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{item.titulo}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>

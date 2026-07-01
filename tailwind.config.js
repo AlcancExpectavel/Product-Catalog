@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -10,13 +11,15 @@ module.exports = {
         // === CORES DA MARCA ===
         // Substitui estas cores pelas cores oficiais da tua marca
         brand: {
-          50:  "#eff6ff",
-          100: "#dbeafe",
-          200: "#bfdbfe",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-          900: "#1e3a8a",
+          50:  "#e6f4ff",
+          100: "#cce7ff",
+          200: "#99cfff",
+          400: "#0099cc",
+          500: "#0077b8",
+          600: "#0059a0",
+          700: "#003f85",
+          800: "#002d6b",
+          900: "#001d4a",
         },
       },
       fontFamily: {
