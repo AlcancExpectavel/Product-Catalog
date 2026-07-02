@@ -377,6 +377,18 @@ export async function getStaticPaths() {
   };
 }
 
+function serializarDoc(obj) {
+  if (!obj) return null;
+  return Object.fromEntries(
+    Object.entries(obj).map(([k, v]) => [
+      k,
+      v && typeof v === "object" && typeof v.toDate === "function"
+        ? v.toDate().toISOString()
+        : v,
+    ])
+  );
+}
+
 export async function getStaticProps({ params }) {
   const produto = await getProduto(params.id);
   if (!produto) return { notFound: true };
@@ -393,7 +405,7 @@ export async function getStaticProps({ params }) {
     for (const sku of produto.crossells) {
       const found = skuMap[sku.toUpperCase()];
       if (found && found.id !== produto.id) {
-        produtosRelacionados.push(found);
+        produtosRelacionados.push(serializarDoc(found));
       } else {
         crossellsNaoEncontrados.push(sku);
       }
@@ -402,7 +414,7 @@ export async function getStaticProps({ params }) {
 
   return {
     props: {
-      produto,
+      produto: serializarDoc(produto),
       produtosRelacionados,
       crossellsNaoEncontrados,
     },
