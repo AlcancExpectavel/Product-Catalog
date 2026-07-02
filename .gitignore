@@ -10,6 +10,19 @@ node_modules/
 
 # Variáveis de ambiente — NUNCA commitar este ficheiro
 .env.local
+
+# Firebase service account — NUNCA commitar
+firebase-service-account.json
+
+# Imagens descarregadas do fornecedor — ficheiros locais, não vão para o repo
+imagens_por_sku/
+
+# Scripts utilitários locais — não vão para o repo mas ficam no computador
+download_imagens_adamanta.mjs
+download_imagens_adamanta.py
+upload_imagens_sku.mjs
+upload_todos_skus.mjs
+pages/api/upload-sku.js
 .env.*.local
 .env
 

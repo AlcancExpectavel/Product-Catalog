@@ -30,11 +30,11 @@ export default function Produtos({ produtos, categorias }) {
 
   return (
     <Layout title="Catálogo de Produtos">
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Catálogo de Produtos</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Catálogo de Produtos</h1>
           <div className="relative max-w-md">
-            <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -52,7 +52,7 @@ export default function Produtos({ produtos, categorias }) {
             <button
               onClick={() => { setCategoriaAtiva("all"); setPesquisa(""); }}
               className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                categoriaAtiva === "all" ? "bg-brand-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                categoriaAtiva === "all" ? "bg-brand-600 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
               }`}
             >
               Todas
@@ -62,7 +62,7 @@ export default function Produtos({ produtos, categorias }) {
                 key={cat}
                 onClick={() => setCategoriaAtiva(cat)}
                 className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  categoriaAtiva === cat ? "bg-brand-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  categoriaAtiva === cat ? "bg-brand-600 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                 }`}
               >
                 {cat}
@@ -74,8 +74,8 @@ export default function Produtos({ produtos, categorias }) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {count === 0 ? (
-          <div className="text-center py-24 text-gray-500">
-            <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center py-24 text-gray-500 dark:text-gray-400">
+            <svg className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p className="font-semibold text-lg">Nenhum produto encontrado</p>
@@ -83,7 +83,7 @@ export default function Produtos({ produtos, categorias }) {
           </div>
         ) : (
           <>
-            <p className="text-sm text-gray-500 mb-5">{count} produto{count !== 1 ? "s" : ""}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">{count} produto{count !== 1 ? "s" : ""}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {produtosFiltrados.map((p) => (
                 <ProductCard key={p.id} product={p} />

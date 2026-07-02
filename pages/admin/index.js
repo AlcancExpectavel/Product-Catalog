@@ -1,8 +1,3 @@
-// =======================================================
-// PAINEL DE ADMINISTRAÇÃO — dashboard principal
-// Acesso via: /admin  (redireciona para login se não autenticado)
-// =======================================================
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -22,19 +17,18 @@ import Head from "next/head";
 
 const BRAND_NAME = "Alcance Expectável";
 
-// Campos de um produto — ajusta conforme necessário
 const FORM_INICIAL = {
   nome: "",
   sku: "",
   categoria: "",
   descricaoCurta: "",
   descricao: "",
-  caracteristicas: "",    // uma por linha
-  perfeitoPara: "",       // um por linha
-  parametrosTecnicos: "", // um por linha
-  inclui: "",             // um por linha
-  dimensoes: "",          // um por linha
-  crossells: "",          // um por linha
+  caracteristicas: "",
+  perfeitoPara: "",
+  parametrosTecnicos: "",
+  inclui: "",
+  dimensoes: "",
+  crossells: "",
   linkWorten: "",
   linkFnac: "",
   linkAmazon: "",
@@ -45,11 +39,10 @@ export default function AdminDashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Estado
   const [produtos, setProdutos] = useState([]);
   const [categoriasExistentes, setCategoriasExistentes] = useState([]);
   const [novaCategoria, setNovaCategoria] = useState(false);
-  const [vista, setVista] = useState("lista"); // "lista" | "formulario"
+  const [vista, setVista] = useState("lista");
   const [pesquisaAdmin, setPesquisaAdmin] = useState("");
   const [ordenacao, setOrdenacao] = useState({ coluna: "nome", dir: "asc" });
   const [editId, setEditId] = useState(null);
@@ -61,7 +54,6 @@ export default function AdminDashboard() {
   const [confirmarRemover, setConfirmarRemover] = useState(null);
   const [guardandoCategoria, setGuardandoCategoria] = useState(false);
 
-  // Autenticação
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       if (!u) {
@@ -72,7 +64,6 @@ export default function AdminDashboard() {
         carregarProdutos();
         getCategorias().then((cats) => {
           setCategoriasExistentes(cats);
-          // Se não há categorias, começa sempre em modo de texto
           if (cats.length === 0) setNovaCategoria(true);
         }).catch(() => {});
       }
@@ -89,7 +80,6 @@ export default function AdminDashboard() {
     }
   }
 
-  // Formulário
   function abrirNovoProduto() {
     setForm(FORM_INICIAL);
     setImagensFicheiros([]);
@@ -127,7 +117,6 @@ export default function AdminDashboard() {
 
   function handleChange(e) {
     const { name, value } = e.target;
-    // SKU: só letras e números
     if (name === "sku") {
       setForm({ ...form, sku: value.replace(/[^A-Za-z0-9]/g, "") });
       return;
@@ -166,7 +155,6 @@ export default function AdminDashboard() {
     setMensagem(null);
 
     try {
-      // Verifica SKU duplicado (apenas ao criar, não ao editar)
       if (!editId && form.sku.trim()) {
         const skuNorm = form.sku.trim().toLowerCase();
         const duplicado = produtos.find((p) => p.sku?.trim().toLowerCase() === skuNorm);
@@ -177,7 +165,6 @@ export default function AdminDashboard() {
         }
       }
 
-      // Converte campos multi-linha em arrays
       const dados = {
         nome: form.nome.trim(),
         sku: form.sku.trim(),
@@ -195,12 +182,10 @@ export default function AdminDashboard() {
         linkAmazon: form.linkAmazon.trim(),
       };
 
-      // Garante que a categoria existe no Firestore
       if (dados.categoria) await criarCategoria(dados.categoria);
 
       let produtoId = editId;
 
-      // Cria ou atualiza
       if (!editId) {
         const ref = await criarProduto({ ...dados, imagens: [] });
         produtoId = ref.id;
@@ -208,14 +193,12 @@ export default function AdminDashboard() {
         await atualizarProduto(editId, { ...dados, imagens: imagensExistentes });
       }
 
-      // Upload de novas imagens
       let novasUrls = [];
       for (const f of imagensFicheiros) {
         const url = await uploadImagem(f, produtoId);
         novasUrls.push(url);
       }
 
-      // Combina imagens existentes + novas
       if (novasUrls.length > 0) {
         const todasImagens = [...imagensExistentes, ...novasUrls];
         await atualizarProduto(produtoId, { imagens: todasImagens });
@@ -256,7 +239,6 @@ export default function AdminDashboard() {
       <Head><title>Admin | {BRAND_NAME}</title></Head>
       <div className="min-h-screen bg-gray-50">
 
-        {/* Barra superior admin */}
         <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -278,7 +260,6 @@ export default function AdminDashboard() {
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
-          {/* Mensagem de feedback */}
           {mensagem && (
             <div className={`mb-6 px-4 py-3 rounded-lg text-sm font-medium ${
               mensagem.tipo === "sucesso"
@@ -289,7 +270,6 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* ── LISTA DE PRODUTOS ── */}
           {vista === "lista" && (
             <>
               <div className="flex items-center justify-between mb-4">
@@ -304,7 +284,6 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
-              {/* Barra de pesquisa */}
               <div className="relative mb-4 max-w-sm">
                 <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -332,6 +311,11 @@ export default function AdminDashboard() {
                   !q || p.nome?.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q) || p.categoria?.toLowerCase().includes(q)
                 );
                 const ordenados = [...filtrados].sort((a, b) => {
+                  if (ordenacao.coluna === "imagens") {
+                    const va = a.imagens?.length || 0;
+                    const vb = b.imagens?.length || 0;
+                    return ordenacao.dir === "asc" ? va - vb : vb - va;
+                  }
                   const va = (a[ordenacao.coluna] || "").toString().toLowerCase();
                   const vb = (b[ordenacao.coluna] || "").toString().toLowerCase();
                   return ordenacao.dir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
@@ -360,7 +344,9 @@ export default function AdminDashboard() {
                           <th className="px-4 py-3 text-center cursor-pointer select-none hover:text-gray-600" onClick={() => toggleOrdem("categoria")}>
                             Categoria <Seta col="categoria" />
                           </th>
-                          <th className="px-4 py-3 text-center">Imagens</th>
+                          <th className="px-4 py-3 text-center cursor-pointer select-none hover:text-gray-600" onClick={() => toggleOrdem("imagens")}>
+                            Imagens <Seta col="imagens" />
+                          </th>
                           <th className="px-4 py-3 text-center">Ações</th>
                         </tr>
                       </thead>
@@ -418,7 +404,6 @@ export default function AdminDashboard() {
             </>
           )}
 
-          {/* ── FORMULÁRIO PRODUTO ── */}
           {vista === "formulario" && (
             <>
               <div className="flex items-center gap-3 mb-6">
@@ -536,7 +521,6 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* Links marketplace */}
                 <div className="card p-6">
                   <h2 className="font-semibold text-gray-900 mb-4">Links de marketplace <span className="text-gray-400 font-normal text-sm">(opcional)</span></h2>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -553,7 +537,6 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* Imagens */}
                 <div className="card p-6">
                   <h2 className="font-semibold text-gray-900 mb-4">Imagens</h2>
 
@@ -592,7 +575,6 @@ export default function AdminDashboard() {
                   </label>
                 </div>
 
-                {/* Botões */}
                 <div className="flex items-center gap-3">
                   <button type="submit" disabled={guardando} className="btn-primary">
                     {guardando ? "A guardar..." : editId ? "Guardar alterações" : "Criar produto"}
@@ -617,7 +599,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Modal de confirmação de remoção */}
       {confirmarRemover && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">

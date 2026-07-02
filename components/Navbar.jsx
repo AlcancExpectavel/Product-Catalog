@@ -15,7 +15,6 @@ export default function Navbar() {
   const [darkMode, setDarkMode] = useState(false);
   const router = useRouter();
 
-  // Inicializa modo escuro a partir do localStorage
   useEffect(() => {
     const saved = localStorage.getItem("theme");
     const prefereDark = saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -34,13 +33,11 @@ export default function Navbar() {
     getCategorias().then(setCategorias).catch(() => {});
   }, []);
 
-  // Fecha sidebar ao navegar
   useEffect(() => {
     setSidebarOpen(false);
     setMenuOpen(false);
   }, [router.asPath]);
 
-  // Bloqueia scroll quando sidebar aberta
   useEffect(() => {
     document.body.style.overflow = sidebarOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -63,7 +60,6 @@ export default function Navbar() {
       );
     } else {
       setLang("pt");
-      // Volta à versão original removendo o proxy do Google Translate se existir
       const url = new URL(window.location.href);
       const original = url.searchParams.get("u");
       window.location.href = original || window.location.origin;
@@ -80,12 +76,8 @@ export default function Navbar() {
   return (
     <>
       <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40 shadow-sm">
-
-        {/* Linha superior */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-3 items-center h-16">
-
-            {/* Esquerda — Logo */}
             <div className="flex items-center">
               <Link href="/" className="flex items-center gap-2 group">
                 <BrandIcon size={32} className="shrink-0" />
@@ -95,7 +87,6 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* Centro — Pesquisa */}
             <div className="flex justify-center">
               <form onSubmit={handlePesquisa} className="w-full max-w-sm hidden md:block">
                 <div className="relative">
@@ -115,9 +106,7 @@ export default function Navbar() {
               </form>
             </div>
 
-            {/* Direita — Idioma + Admin + Mobile menu */}
             <div className="flex items-center justify-end gap-1.5">
-              {/* Botão dark/light mode */}
               <button
                 onClick={toggleDark}
                 title={darkMode ? "Modo claro" : "Modo escuro"}
@@ -126,7 +115,6 @@ export default function Navbar() {
                 {darkMode ? "☀️" : "🌙"}
               </button>
 
-              {/* Botão de idioma */}
               <button
                 onClick={handleLang}
                 title={lang === "pt" ? "Translate to English" : "Voltar ao Português"}
@@ -151,14 +139,12 @@ export default function Navbar() {
                 <span>{lang === "pt" ? "PT" : "EN"}</span>
               </button>
 
-              {/* Ícone admin */}
               <Link href="/admin" title="Área de administração" className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </Link>
 
-              {/* Mobile hamburger */}
               <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={menuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
@@ -168,12 +154,9 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Linha de navegação desktop */}
         <div className="hidden md:block border-t border-gray-100 dark:border-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <nav className="flex items-center gap-2 h-11">
-
-              {/* Botão Categorias — destaque */}
               <button
                 onClick={() => setSidebarOpen(true)}
                 className="flex items-center gap-2 bg-brand-700 hover:bg-brand-800 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
@@ -203,7 +186,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Menu mobile */}
         {menuOpen && (
           <div className="md:hidden border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 space-y-1">
             <form onSubmit={handlePesquisa} className="mb-3">
@@ -227,8 +209,6 @@ export default function Navbar() {
         )}
       </header>
 
-      {/* ── Sidebar de Categorias ── */}
-      {/* Overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/40 z-50 transition-opacity"
@@ -236,9 +216,7 @@ export default function Navbar() {
         />
       )}
 
-      {/* Painel lateral */}
       <div className={`fixed top-0 left-0 h-full w-72 bg-white dark:bg-gray-900 z-50 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        {/* Cabeçalho do sidebar */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-2">
             <BrandIcon size={28} className="shrink-0" />
@@ -251,7 +229,6 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Pesquisa no sidebar */}
         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
           <form onSubmit={(e) => { e.preventDefault(); if (pesquisa.trim()) { router.push(`/produtos?q=${encodeURIComponent(pesquisa.trim())}`); setPesquisa(""); setSidebarOpen(false); } }}>
             <div className="relative">
@@ -271,12 +248,10 @@ export default function Navbar() {
           </form>
         </div>
 
-        {/* Título */}
         <div className="px-5 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
           <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Categorias</h2>
         </div>
 
-        {/* Lista de categorias */}
         <nav className="flex-1 overflow-y-auto py-2">
           <Link
             href="/produtos"

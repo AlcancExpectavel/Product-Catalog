@@ -1,8 +1,3 @@
-// =======================================================
-// PÁGINA DE LOGIN DO ADMINISTRADOR
-// Acesso via: /admin/login
-// =======================================================
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
@@ -19,7 +14,6 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Se já está autenticado, redireciona para o painel
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) router.replace("/admin");
@@ -32,7 +26,6 @@ export default function AdminLogin() {
     setErro("");
     setLoading(true);
 
-    // Verifica se o email é o do admin configurado
     const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
     if (adminEmail && email !== adminEmail) {
       setErro("Acesso não autorizado.");

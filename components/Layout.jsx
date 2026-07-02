@@ -1,4 +1,3 @@
-// Layout principal — envolve todas as páginas com Navbar + Footer
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import Head from "next/head";
