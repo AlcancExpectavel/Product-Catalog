@@ -360,7 +360,7 @@ export default function PaginaProduto({ produto, produtosRelacionados = [], cros
 
         {crossellsNaoEncontrados.length > 0 && (
           <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm">
-            <p className="font-medium text-yellow-800 dark:text-yellow-200 mb-1">⚠️ Cross-sells não encontrados:</p>
+            <p className="font-medium text-yellow-800 dark:text-yellow-200 mb-1">⚠️ Produtos Relacionados não encontrados:</p>
             <p className="text-yellow-700 dark:text-yellow-300">{crossellsNaoEncontrados.join(", ")}</p>
           </div>
         )}
@@ -402,12 +402,13 @@ export async function getStaticProps({ params }) {
     for (const p of todosProdutos) {
       if (p.sku) skuMap[p.sku.toUpperCase()] = p;
     }
-    for (const sku of produto.crossells) {
-      const found = skuMap[sku.toUpperCase()];
+    for (const entrada of produto.crossells) {
+      const sku = entrada.split(/[\s(]/)[0].trim().toUpperCase();
+      const found = skuMap[sku];
       if (found && found.id !== produto.id) {
         produtosRelacionados.push(serializarDoc(found));
       } else {
-        crossellsNaoEncontrados.push(sku);
+        crossellsNaoEncontrados.push(entrada);
       }
     }
   }
