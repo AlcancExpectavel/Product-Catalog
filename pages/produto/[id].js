@@ -347,23 +347,42 @@ export default function PaginaProduto({ produto, produtosRelacionados = [], cros
           </div>
         )}
 
-        {produtosRelacionados.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Produtos relacionados</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {produtosRelacionados.map((p) => (
-                <ProductCard key={p.id} produto={p} />
-              ))}
+        {(produtosRelacionados.length > 0 || crossellsNaoEncontrados.length > 0) && (() => {
+          const totalSlots = 3;
+          const reais = produtosRelacionados.slice(0, totalSlots);
+          const placeholders = crossellsNaoEncontrados.slice(0, totalSlots - reais.length);
+          return (
+            <div className="mt-12">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Produtos relacionados</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {reais.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
+                {placeholders.map((entrada, i) => {
+                  const match = entrada.match(/\(([^)]+)\)/);
+                  const nome = match ? match[1] : entrada.split(/[\s(]/)[0];
+                  return (
+                    <div key={i} className="rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
+                      <div className="aspect-square bg-gray-50 dark:bg-gray-800/50 flex flex-col items-center justify-center gap-3">
+                        <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                          <svg className="w-7 h-7 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <span className="text-xs font-semibold text-brand-500 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30 px-3 py-1 rounded-full">Em breve</span>
+                      </div>
+                      <div className="p-4 flex flex-col flex-1">
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">SKU: {entrada.split(/[\s(]/)[0]}</p>
+                        <h3 className="font-semibold text-gray-700 dark:text-gray-300 text-sm leading-snug mb-1">{nome}</h3>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Este produto será brevemente adicionado ao catálogo.</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
-
-        {crossellsNaoEncontrados.length > 0 && (
-          <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm">
-            <p className="font-medium text-yellow-800 dark:text-yellow-200 mb-1">⚠️ Produtos Relacionados não encontrados:</p>
-            <p className="text-yellow-700 dark:text-yellow-300">{crossellsNaoEncontrados.join(", ")}</p>
-          </div>
-        )}
+          );
+        })()}
       </div>
     </Layout>
   );
