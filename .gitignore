@@ -23,6 +23,10 @@ download_imagens_adamanta.py
 upload_imagens_sku.mjs
 upload_todos_skus.mjs
 pages/api/upload-sku.js
+pages/api/import-adamanta.js
+pages/api/guardar-produto.js
+importar_produto.mjs
+sku*_importar.mjs
 .env.*.local
 .env
 

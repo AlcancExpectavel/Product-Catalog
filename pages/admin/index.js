@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
@@ -29,9 +29,10 @@ const FORM_INICIAL = {
   inclui: "",
   dimensoes: "",
   crossells: "",
+  preco: "",
   linkWorten: "",
   linkFnac: "",
-  linkAmazon: "",
+  linkPCComponentes: "",
 };
 
 export default function AdminDashboard() {
@@ -53,6 +54,15 @@ export default function AdminDashboard() {
   const [mensagem, setMensagem] = useState(null);
   const [confirmarRemover, setConfirmarRemover] = useState(null);
   const [guardandoCategoria, setGuardandoCategoria] = useState(false);
+  const [previewUrls, setPreviewUrls] = useState([]);
+  const dragRef = useRef(null);
+  const [dropTarget, setDropTarget] = useState(null); // { tipo, index }
+
+  useEffect(() => {
+    const urls = imagensFicheiros.map((f) => URL.createObjectURL(f));
+    setPreviewUrls(urls);
+    return () => urls.forEach((u) => URL.revokeObjectURL(u));
+  }, [imagensFicheiros]);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -102,11 +112,12 @@ export default function AdminDashboard() {
       inclui: (produto.inclui || []).join("\n"),
       dimensoes: (produto.dimensoes || []).join("\n"),
       crossells: (produto.crossells || []).join("\n"),
+      preco: produto.preco || "",
       linkWorten: produto.linkWorten || "",
       linkFnac: produto.linkFnac || "",
-      linkAmazon: produto.linkAmazon || "",
+      linkPCComponentes: produto.linkPCComponentes || "",
     });
-    setImagensExistentes(produto.imagens || []);
+    setImagensExistentes((produto.imagens || []).filter(Boolean));
     setImagensFicheiros([]);
     setEditId(produto.id);
     setNovaCategoria(false);
@@ -130,6 +141,29 @@ export default function AdminDashboard() {
 
   function removerImagemExistente(url) {
     setImagensExistentes((prev) => prev.filter((u) => u !== url));
+  }
+
+  function removerNovaImagem(index) {
+    setImagensFicheiros((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function reordenar(tipo, from, to) {
+    if (from === to) return;
+    if (tipo === "existente") {
+      setImagensExistentes((prev) => {
+        const arr = [...prev];
+        const [item] = arr.splice(from, 1);
+        arr.splice(to, 0, item);
+        return arr;
+      });
+    } else {
+      setImagensFicheiros((prev) => {
+        const arr = [...prev];
+        const [item] = arr.splice(from, 1);
+        arr.splice(to, 0, item);
+        return arr;
+      });
+    }
   }
 
   async function handleGuardarCategoria() {
@@ -165,8 +199,11 @@ export default function AdminDashboard() {
         }
       }
 
+      const toTitleCase = (str) =>
+        str.trim().replace(/\S+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1));
+
       const dados = {
-        nome: form.nome.trim(),
+        nome: toTitleCase(form.nome),
         sku: form.sku.trim(),
         categoria: form.categoria.trim(),
         descricaoCurta: form.descricaoCurta.trim(),
@@ -177,9 +214,10 @@ export default function AdminDashboard() {
         inclui: form.inclui.split("\n").map((s) => s.trim()).filter(Boolean),
         dimensoes: form.dimensoes.split("\n").map((s) => s.trim()).filter(Boolean),
         crossells: form.crossells.split("\n").map((s) => s.trim()).filter(Boolean),
+        preco: form.preco.trim(),
         linkWorten: form.linkWorten.trim(),
         linkFnac: form.linkFnac.trim(),
-        linkAmazon: form.linkAmazon.trim(),
+        linkPCComponentes: form.linkPCComponentes.trim(),
       };
 
       if (dados.categoria) await criarCategoria(dados.categoria);
@@ -359,7 +397,7 @@ export default function AdminDashboard() {
                               <div className="flex items-center gap-3">
                                 {p.imagens?.[0] ? (
                                   <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                                    <Image src={p.imagens[0]} alt={p.nome} fill className="object-cover" />
+                                    <Image src={p.imagens[0]} alt={p.nome} fill sizes="40px" className="object-cover" />
                                   </div>
                                 ) : (
                                   <div className="w-10 h-10 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center text-gray-300">
@@ -485,6 +523,11 @@ export default function AdminDashboard() {
                       </div>
                     )}
                   </div>
+                  <div>
+                    <label className="label">Preço</label>
+                    <input name="preco" value={form.preco} onChange={handleChange} className="input-field" placeholder="Ex: 29,99 €" />
+                  </div>
+                  <div />
                   <div className="sm:col-span-2">
                     <label className="label">Descrição curta</label>
                     <input name="descricaoCurta" value={form.descricaoCurta} onChange={handleChange} className={`input-field ${SKU_REGEX.test(form.descricaoCurta) ? "border-orange-400 focus:ring-orange-400" : ""}`} placeholder="1-2 frases resumo" />
@@ -525,12 +568,12 @@ export default function AdminDashboard() {
                   <h2 className="font-semibold text-gray-900 mb-4">Links de marketplace <span className="text-gray-400 font-normal text-sm">(opcional)</span></h2>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {[
-                      { name: "linkWorten", label: "Worten", placeholder: "https://www.worten.pt/..." },
-                      { name: "linkFnac", label: "Fnac", placeholder: "https://www.fnac.pt/..." },
-                      { name: "linkAmazon", label: "Amazon", placeholder: "https://www.amazon.es/..." },
+                      { name: "linkWorten", label: "Worten", placeholder: "https://www.worten.pt/...", labelClass: "text-red-600" },
+                      { name: "linkFnac", label: "Fnac", placeholder: "https://www.fnac.pt/...", labelClass: "text-yellow-500" },
+                      { name: "linkPCComponentes", label: "PCComponentes", placeholder: "https://www.pccomponentes.pt/...", labelClass: "text-orange-500" },
                     ].map((m) => (
                       <div key={m.name}>
-                        <label className="label">{m.label}</label>
+                        <label className={`label ${m.labelClass || ""}`}>{m.label}</label>
                         <input name={m.name} type="url" value={form[m.name]} onChange={handleChange} className="input-field" placeholder={m.placeholder} />
                       </div>
                     ))}
@@ -538,26 +581,132 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="card p-6">
-                  <h2 className="font-semibold text-gray-900 mb-4">Imagens</h2>
+                  <h2 className="font-semibold text-gray-900 mb-1">Imagens</h2>
+                  <p className="text-xs text-gray-400 mb-4">Arrasta as imagens para mudar a ordem. A primeira imagem é a principal. (Recomendado fazer depois de criar produto.)</p>
 
                   {imagensExistentes.length > 0 && (
-                    <div className="mb-4">
-                      <p className="text-xs text-gray-400 mb-2">Imagens actuais (clica no × para remover)</p>
-                      <div className="flex flex-wrap gap-3">
-                        {imagensExistentes.map((url) => (
-                          <div key={url} className="relative w-20 h-20 group">
-                            <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
-                              <Image src={url} alt="Imagem produto" fill className="object-cover" />
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => removerImagemExistente(url)}
-                              className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    <div className="mb-5">
+                      <p className="text-xs font-medium text-gray-500 mb-2">Imagens guardadas</p>
+                      <div
+                        className="flex flex-wrap items-center gap-3"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          if (dragRef.current?.tipo === "existente" && dropTarget) {
+                            const from = dragRef.current.index;
+                            let to = dropTarget.index;
+                            if (to > from) to -= 1;
+                            reordenar("existente", from, to);
+                          }
+                          dragRef.current = null;
+                          setDropTarget(null);
+                        }}
+                      >
+                        {imagensExistentes.map((url, i) => (
+                          <div key={`${url}-${i}`} className="flex items-center">
+                            {dropTarget?.tipo === "existente" && dropTarget?.index === i && (
+                              <div className="w-1 h-20 bg-brand-500 rounded-full mr-3 shrink-0 pointer-events-none" />
+                            )}
+                            <div
+                              draggable
+                              onDragStart={() => { dragRef.current = { tipo: "existente", index: i }; }}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const insertIndex = e.clientX < rect.left + rect.width / 2 ? i : i + 1;
+                                setDropTarget({ tipo: "existente", index: insertIndex });
+                              }}
+                              onDragEnd={() => { dragRef.current = null; setDropTarget(null); }}
+                              className="relative w-20 h-20 group cursor-grab active:cursor-grabbing rounded-lg ring-2 ring-transparent hover:ring-brand-400 transition-all"
                             >
-                              ×
-                            </button>
+                              {i === 0 && (
+                                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-brand-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full z-10 whitespace-nowrap">
+                                  Principal
+                                </span>
+                              )}
+                              <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
+                                <Image src={url} alt={`Imagem ${i + 1}`} fill sizes="80px" className="object-cover" />
+                              </div>
+                              <div className="absolute inset-x-0 bottom-0 flex justify-center pb-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                <svg className="w-4 h-4 text-white drop-shadow" viewBox="0 0 20 20" fill="currentColor">
+                                  <path d="M7 2a2 2 0 110 4 2 2 0 010-4zm6 0a2 2 0 110 4 2 2 0 010-4zM7 8a2 2 0 110 4 2 2 0 010-4zm6 0a2 2 0 110 4 2 2 0 010-4zM7 14a2 2 0 110 4 2 2 0 010-4zm6 0a2 2 0 110 4 2 2 0 010-4z" />
+                                </svg>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removerImagemExistente(url)}
+                                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                              >
+                                ×
+                              </button>
+                            </div>
                           </div>
                         ))}
+                        {dropTarget?.tipo === "existente" && dropTarget?.index === imagensExistentes.length && (
+                          <div className="w-1 h-20 bg-brand-500 rounded-full shrink-0 pointer-events-none" />
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {imagensFicheiros.length > 0 && (
+                    <div className="mb-5">
+                      <p className="text-xs font-medium text-gray-500 mb-2">Novas imagens (ainda não guardadas)</p>
+                      <div
+                        className="flex flex-wrap items-center gap-3"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          if (dragRef.current?.tipo === "nova" && dropTarget) {
+                            const from = dragRef.current.index;
+                            let to = dropTarget.index;
+                            if (to > from) to -= 1;
+                            reordenar("nova", from, to);
+                          }
+                          dragRef.current = null;
+                          setDropTarget(null);
+                        }}
+                      >
+                        {imagensFicheiros.map((f, i) => (
+                          <div key={i} className="flex items-center">
+                            {dropTarget?.tipo === "nova" && dropTarget?.index === i && (
+                              <div className="w-1 h-20 bg-brand-500 rounded-full mr-3 shrink-0 pointer-events-none" />
+                            )}
+                            <div
+                              draggable
+                              onDragStart={() => { dragRef.current = { tipo: "nova", index: i }; }}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const insertIndex = e.clientX < rect.left + rect.width / 2 ? i : i + 1;
+                                setDropTarget({ tipo: "nova", index: insertIndex });
+                              }}
+                              onDragEnd={() => { dragRef.current = null; setDropTarget(null); }}
+                              className="relative w-20 h-20 group cursor-grab active:cursor-grabbing rounded-lg ring-2 ring-transparent hover:ring-brand-400 transition-all"
+                            >
+                              {previewUrls[i] && (
+                                <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
+                                  <img src={previewUrls[i]} alt={f.name} className="w-full h-full object-cover" />
+                                </div>
+                              )}
+                              <div className="absolute inset-x-0 bottom-0 flex justify-center pb-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                <svg className="w-4 h-4 text-white drop-shadow" viewBox="0 0 20 20" fill="currentColor">
+                                  <path d="M7 2a2 2 0 110 4 2 2 0 010-4zm6 0a2 2 0 110 4 2 2 0 010-4zM7 8a2 2 0 110 4 2 2 0 010-4zm6 0a2 2 0 110 4 2 2 0 010-4zM7 14a2 2 0 110 4 2 2 0 010-4zm6 0a2 2 0 110 4 2 2 0 010-4z" />
+                                </svg>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removerNovaImagem(i)}
+                                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                        {dropTarget?.tipo === "nova" && dropTarget?.index === imagensFicheiros.length && (
+                          <div className="w-1 h-20 bg-brand-500 rounded-full shrink-0 pointer-events-none" />
+                        )}
                       </div>
                     </div>
                   )}
@@ -567,11 +716,7 @@ export default function AdminDashboard() {
                     <svg className="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    {imagensFicheiros.length > 0 ? (
-                      <p className="text-sm text-brand-600 font-medium">{imagensFicheiros.length} ficheiro(s) selecionado(s)</p>
-                    ) : (
-                      <p className="text-sm text-gray-400">Clica para selecionar imagens (PNG, JPG, WEBP)</p>
-                    )}
+                    <p className="text-sm text-gray-400">Clica para adicionar imagens (PNG, JPG, WEBP)</p>
                   </label>
                 </div>
 

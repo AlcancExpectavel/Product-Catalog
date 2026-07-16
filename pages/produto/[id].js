@@ -19,10 +19,10 @@ const MARKETPLACES = [
     logo: "F",
   },
   {
-    chave: "linkAmazon",
-    nome: "Amazon",
+    chave: "linkPCComponentes",
+    nome: "PCComponentes",
     cor: "bg-orange-500 hover:bg-orange-600",
-    logo: "A",
+    logo: "PC",
   },
 ];
 
@@ -89,7 +89,7 @@ export default function PaginaProduto({ produto, produtosRelacionados = [], cros
   }
 
   const {
-    nome, sku, categoria, descricao, descricaoCurta,
+    nome, sku, categoria, descricao, descricaoCurta, preco,
     caracteristicas = [], inclui = [],
     perfeitoPara = [], parametrosTecnicos = [], dimensoes = [], crossells = [],
   } = produto;
@@ -199,6 +199,22 @@ export default function PaginaProduto({ produto, produtosRelacionados = [], cros
             </h1>
             {sku && (
               <p className="text-sm text-gray-400 dark:text-gray-500 mb-4">Referência: {sku}</p>
+            )}
+            {preco && (
+              <div className="mb-6">
+                <div className="flex items-baseline gap-3 mb-2">
+                  <span className="text-3xl font-extrabold text-brand-600 dark:text-brand-400">
+                    {/\d/.test(preco) && !preco.includes("€") ? `${preco} €` : preco}
+                  </span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">IVA incluído</span>
+                </div>
+                <div className="inline-flex items-center gap-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
+                  <svg className="w-4 h-4 text-brand-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  Preço B2B disponível — <Link href="/contactos" className="text-brand-600 dark:text-brand-400 font-semibold hover:underline">contacte-nos</Link>
+                </div>
+              </div>
             )}
             {descricaoCurta && (
               <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">{descricaoCurta}</p>
