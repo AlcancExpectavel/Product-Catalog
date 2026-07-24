@@ -48,14 +48,14 @@ export default function AdminLogin() {
       <Head>
         <title>Admin Login | {BRAND_NAME}</title>
       </Head>
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4 transition-colors">
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               <BrandIcon size={48} />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Área de Administração</h1>
-            <p className="text-gray-500 text-sm mt-1">{BRAND_NAME}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Área de Administração</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{BRAND_NAME}</p>
           </div>
 
           <div className="card p-6">
@@ -84,7 +84,7 @@ export default function AdminLogin() {
               </div>
 
               {erro && (
-                <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+                <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 rounded-lg px-4 py-3 text-sm">
                   {erro}
                 </div>
               )}

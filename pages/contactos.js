@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import Layout from "../components/Layout";
 
 const CAMPOS_INICIAL = {
@@ -11,9 +12,31 @@ const CAMPOS_INICIAL = {
 };
 
 export default function Contactos() {
+  const router = useRouter();
   const [form, setForm] = useState(CAMPOS_INICIAL);
   const [erros, setErros] = useState({});
   const [estado, setEstado] = useState("idle"); 
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const nomeProduto = Array.isArray(router.query.produto)
+      ? router.query.produto[0]
+      : router.query.produto;
+    const sku = Array.isArray(router.query.sku)
+      ? router.query.sku[0]
+      : router.query.sku;
+
+    if (!nomeProduto && !sku) return;
+
+    const produtoSelecionado = [sku, nomeProduto].filter(Boolean).join(" - ");
+    setForm((atual) => (
+      atual.produto
+        ? atual
+        : { ...atual, produto: produtoSelecionado }
+    ));
+  }, [router.isReady, router.query.produto, router.query.sku]);
+
   function atualizar(e) {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));

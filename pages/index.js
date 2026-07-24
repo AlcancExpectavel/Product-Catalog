@@ -4,24 +4,106 @@ import Layout from "../components/Layout";
 import ProductCard from "../components/ProductCard";
 import { getProdutos } from "../lib/produtos";
 
+const FORMATOS_IMAGEM_ESTATICA = /\.(jpe?g|png|webp|avif)$/i;
+
+function eImagemEstatica(src) {
+  if (typeof src !== "string" || !src.trim()) return false;
+
+  try {
+    const caminho = decodeURIComponent(
+      new URL(src, "https://catalogo.local").pathname
+    );
+    return FORMATOS_IMAGEM_ESTATICA.test(caminho);
+  } catch {
+    return FORMATOS_IMAGEM_ESTATICA.test(src.split(/[?#]/)[0]);
+  }
+}
+
 const BRAND_NAME = "Alcance Expectável";
 
 function HeroBackground({ imagens }) {
-  const [ativos, setAtivos] = useState([0, 1, 2]);
-  const [fade, setFade] = useState(true);
+  const [ativos, setAtivos] = useState([]);
+  const [fade, setFade] = useState(false);
   const total = imagens.length;
 
   useEffect(() => {
     if (total < 1) return;
-    const interval = setInterval(() => {
-      setFade(false);
-      setTimeout(() => {
-        setAtivos((prev) => prev.map((i) => (i + 3) % total));
+
+    let cancelado = false;
+    const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const indicesDoGrupo = (inicio) =>
+      [0, 1, 2].map((offset) => (inicio + offset) % total);
+
+    const carregarImagem = (src) =>
+      new Promise((resolve) => {
+        const imagem = new window.Image();
+        let terminou = false;
+
+        const concluir = async () => {
+          if (terminou) return;
+          terminou = true;
+          try {
+            await imagem.decode?.();
+          } catch {
+            // Se o browser não conseguir descodificar antecipadamente,
+            // o evento de load continua a garantir que a imagem foi carregada.
+          }
+          resolve();
+        };
+
+        imagem.onload = concluir;
+        imagem.onerror = concluir;
+        imagem.src = src;
+        if (imagem.complete) concluir();
+      });
+
+    const carregarGrupo = (indices) =>
+      Promise.all(indices.map((indice) => carregarImagem(imagens[indice])));
+
+    async function iniciarRotacao() {
+      let inicio = 0;
+      const grupoInicial = indicesDoGrupo(inicio);
+
+      await carregarGrupo(grupoInicial);
+      if (cancelado) return;
+
+      setAtivos(grupoInicial);
+      await esperar(50);
+      if (cancelado) return;
+      setFade(true);
+
+      if (total <= 3) return;
+
+      while (!cancelado) {
+        const proximoInicio = (inicio + 3) % total;
+        const proximoGrupo = indicesDoGrupo(proximoInicio);
+
+        // O próximo conjunto carrega em segundo plano enquanto o atual
+        // permanece totalmente visível.
+        await Promise.all([
+          esperar(3500),
+          carregarGrupo(proximoGrupo),
+        ]);
+        if (cancelado) return;
+
+        setFade(false);
+        await esperar(450);
+        if (cancelado) return;
+
+        setAtivos(proximoGrupo);
+        inicio = proximoInicio;
+
+        await esperar(50);
+        if (cancelado) return;
         setFade(true);
-      }, 400);
-    }, 3500);
-    return () => clearInterval(interval);
-  }, [total]);
+      }
+    }
+
+    iniciarRotacao();
+    return () => {
+      cancelado = true;
+    };
+  }, [imagens, total]);
 
   if (total === 0) return null;
 
@@ -35,7 +117,7 @@ function HeroBackground({ imagens }) {
           className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-2xl overflow-hidden shrink-0"
           style={{
             opacity: fade ? (i === 1 ? 0.18 : 0.12) : 0,
-            transition: "opacity 0.4s ease",
+            transition: "opacity 0.45s ease",
             transform: i === 1 ? "scale(1.1)" : "scale(1)",
           }}
         >
@@ -48,8 +130,8 @@ function HeroBackground({ imagens }) {
 
 export default function Home({ produtosDestaque }) {
   const todasImagens = produtosDestaque
-    .flatMap((p) => p.imagens || [])
-    .filter(Boolean);
+    .map((p) => p.imagens?.[0])
+    .filter(eImagemEstatica);
 
   return (
     <Layout

@@ -12,6 +12,13 @@ export default function Navbar() {
   const [pesquisa, setPesquisa] = useState("");
   const [categorias, setCategorias] = useState([]);
   const [lang, setLang] = useState("pt");
+
+  // Detecta a língua activa pelo cookie do Google Translate
+  useEffect(() => {
+    const match = document.cookie.match(/googtrans=\/pt\/([a-z]+)/);
+    if (match) setLang(match[1]);
+    else setLang("pt");
+  }, []);
   const [darkMode, setDarkMode] = useState(false);
   const router = useRouter();
 
@@ -51,26 +58,26 @@ export default function Navbar() {
     }
   };
 
-  const handleLang = () => {
-    if (lang === "pt") {
-      setLang("en");
-      window.open(
-        `https://translate.google.com/translate?sl=pt&tl=en&u=${encodeURIComponent(window.location.href)}`,
-        "_self"
-      );
+  function switchLang(target) {
+    if (target === lang) return;
+    setLang(target);
+
+    if (target === "pt") {
+      // Limpar cookie → reload carrega página no original PT
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=.${location.hostname}`;
     } else {
-      setLang("pt");
-      const url = new URL(window.location.href);
-      const original = url.searchParams.get("u");
-      window.location.href = original || window.location.origin;
+      document.cookie = `googtrans=/pt/${target}; path=/`;
     }
-  };
+    location.reload();
+  }
 
   const navLinks = [
     { href: "/", label: "Início" },
     { href: "/produtos", label: "Produtos" },
     { href: "/sobre", label: "Sobre nós" },
     { href: "/contactos", label: "Contactos" },
+    { href: "/seguimento", label: "Seguimento de Pedidos" },
   ];
 
   return (
@@ -81,7 +88,7 @@ export default function Navbar() {
             <div className="flex items-center">
               <Link href="/" className="flex items-center gap-2 group">
                 <BrandIcon size={32} className="shrink-0" />
-                <span className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-brand-600 transition-colors hidden sm:block">
+                <span className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-brand-600 transition-colors hidden sm:block notranslate" translate="no">
                   {BRAND_NAME}
                 </span>
               </Link>
@@ -115,29 +122,47 @@ export default function Navbar() {
                 {darkMode ? "☀️" : "🌙"}
               </button>
 
-              <button
-                onClick={handleLang}
-                title={lang === "pt" ? "Translate to English" : "Voltar ao Português"}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-brand-400 hover:bg-brand-50 transition-colors text-xs font-semibold text-gray-600"
-              >
-                {lang === "pt" ? (
-                  <svg viewBox="0 0 20 14" className="w-5 h-3.5 rounded-sm" xmlns="http://www.w3.org/2000/svg">
+              {/* Seletor de língua - 3 bandeiras (notranslate evita que o GT traduza os labels) */}
+              <div className="flex items-center gap-1 notranslate" translate="no">
+                <button
+                  onClick={() => switchLang("pt")}
+                  title="Português"
+                  className={`flex items-center gap-1 px-2 py-1.5 rounded-lg border transition-colors text-xs font-bold ${lang === "pt" ? "border-brand-400 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300" : "border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-brand-300 hover:bg-brand-50 dark:hover:bg-gray-800"}`}
+                >
+                  <svg viewBox="0 0 20 14" className="w-5 h-3.5 rounded-sm shrink-0" xmlns="http://www.w3.org/2000/svg">
                     <rect width="8" height="14" fill="#006600"/>
                     <rect x="8" width="12" height="14" fill="#FF0000"/>
                     <ellipse cx="8" cy="7" rx="3.2" ry="3.2" fill="#FFFF00"/>
                     <ellipse cx="8" cy="7" rx="2" ry="2" fill="white"/>
                   </svg>
-                ) : (
-                  <svg viewBox="0 0 20 14" className="w-5 h-3.5 rounded-sm" xmlns="http://www.w3.org/2000/svg">
+                  <span className="notranslate">PT</span>
+                </button>
+                <button
+                  onClick={() => switchLang("es")}
+                  title="Español"
+                  className={`flex items-center gap-1 px-2 py-1.5 rounded-lg border transition-colors text-xs font-bold ${lang === "es" ? "border-brand-400 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300" : "border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-brand-300 hover:bg-brand-50 dark:hover:bg-gray-800"}`}
+                >
+                  <svg viewBox="0 0 20 14" className="w-5 h-3.5 rounded-sm shrink-0" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="20" height="14" fill="#AA151B"/>
+                    <rect y="3" width="20" height="8" fill="#F1BF00"/>
+                  </svg>
+                  <span className="notranslate">ES</span>
+                </button>
+                <button
+                  onClick={() => switchLang("en")}
+                  title="English"
+                  className={`flex items-center gap-1 px-2 py-1.5 rounded-lg border transition-colors text-xs font-bold ${lang === "en" ? "border-brand-400 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300" : "border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-brand-300 hover:bg-brand-50 dark:hover:bg-gray-800"}`}
+                >
+                  <svg viewBox="0 0 20 14" className="w-5 h-3.5 rounded-sm shrink-0" xmlns="http://www.w3.org/2000/svg">
                     <rect width="20" height="14" fill="#012169"/>
                     <path d="M0,0 L20,14 M20,0 L0,14" stroke="white" strokeWidth="2.8"/>
                     <path d="M0,0 L20,14 M20,0 L0,14" stroke="#C8102E" strokeWidth="1.6"/>
                     <path d="M10,0 V14 M0,7 H20" stroke="white" strokeWidth="4"/>
                     <path d="M10,0 V14 M0,7 H20" stroke="#C8102E" strokeWidth="2.4"/>
                   </svg>
-                )}
-                <span>{lang === "pt" ? "PT" : "EN"}</span>
-              </button>
+                  <span className="notranslate">EN</span>
+                </button>
+              </div>
 
               <Link href="/admin" title="Área de administração" className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-brand-600 hover:bg-brand-50 transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,6 +230,21 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {/* Seletor de língua mobile */}
+            <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-800 mt-2 notranslate" translate="no">
+              <span className="text-xs text-gray-400 font-medium">Língua:</span>
+              {[
+                { code: "pt", label: "PT", flag: <svg viewBox="0 0 20 14" className="w-5 h-3.5 rounded-sm" xmlns="http://www.w3.org/2000/svg"><rect width="8" height="14" fill="#006600"/><rect x="8" width="12" height="14" fill="#FF0000"/><ellipse cx="8" cy="7" rx="3.2" ry="3.2" fill="#FFFF00"/><ellipse cx="8" cy="7" rx="2" ry="2" fill="white"/></svg> },
+                { code: "es", label: "ES", flag: <svg viewBox="0 0 20 14" className="w-5 h-3.5 rounded-sm" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#AA151B"/><rect y="3" width="20" height="8" fill="#F1BF00"/></svg> },
+                { code: "en", label: "EN", flag: <svg viewBox="0 0 20 14" className="w-5 h-3.5 rounded-sm" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="14" fill="#012169"/><path d="M0,0 L20,14 M20,0 L0,14" stroke="white" strokeWidth="2.8"/><path d="M0,0 L20,14 M20,0 L0,14" stroke="#C8102E" strokeWidth="1.6"/><path d="M10,0 V14 M0,7 H20" stroke="white" strokeWidth="4"/><path d="M10,0 V14 M0,7 H20" stroke="#C8102E" strokeWidth="2.4"/></svg> },
+              ].map(({ code, label, flag }) => (
+                <button key={code} onClick={() => { switchLang(code); setMenuOpen(false); }}
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border transition-colors text-xs font-bold notranslate ${lang === code ? "border-brand-400 bg-brand-50 text-brand-700" : "border-gray-200 text-gray-500 hover:border-brand-300"}`}
+                >
+                  {flag} <span className="notranslate">{label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </header>
@@ -220,7 +260,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-2">
             <BrandIcon size={28} className="shrink-0" />
-            <span className="font-bold text-gray-900 dark:text-white">{BRAND_NAME}</span>
+            <span className="font-bold text-gray-900 dark:text-white notranslate" translate="no">{BRAND_NAME}</span>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

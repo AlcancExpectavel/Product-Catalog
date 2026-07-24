@@ -7,6 +7,10 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
   }
   body {
     @apply bg-gray-50 text-gray-900 font-sans;
@@ -14,7 +18,7 @@
   }
 }
 
-/* Dark mode — componentes principais */
+/* Dark mode - componentes principais */
 .dark .card {
   @apply bg-gray-900 border-gray-800;
 }
@@ -26,6 +30,43 @@
 }
 .dark .btn-secondary {
   @apply border-gray-600 text-gray-300 hover:bg-gray-800;
+}
+
+/* Google Translate - esconder barra, tooltip e corrigir deslocamento */
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate {
+  display: none !important;
+}
+body {
+  top: 0 !important;
+}
+/* Tooltip "classificar tradução" e popup de texto original */
+.goog-tooltip,
+.goog-tooltip:hover,
+.goog-te-tooltip,
+.goog-te-tooltip-is-visible,
+/* Classes que o GT moderno usa (VIpgJd-*) */
+.VIpgJd-yAWNEb-VIpgJd-fmcmS,
+.VIpgJd-yAWNEb-VIpgJd-fmcmS-sn54Q,
+.VIpgJd-yAWNEb-VIpgJd-fmcmS-sn54Q:hover,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+/* Remover sublinhado pontilhado nos elementos traduzidos */
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border-bottom: none !important;
+}
+#google_translate_element {
+  display: none !important;
+}
+/* Esconder o iframe que o GT injeta no topo */
+.skiptranslate > iframe {
+  display: none !important;
+  height: 0 !important;
 }
 
 @layer components {
