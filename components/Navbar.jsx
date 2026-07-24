@@ -5,6 +5,42 @@ import { getCategorias } from "../lib/produtos";
 import BrandIcon from "./BrandIcon";
 
 const BRAND_NAME = "Alcance Expectável";
+const SUPPORTED_LANGUAGES = ["pt", "es", "en"];
+
+function getGoogleTranslateLanguage() {
+  const matches = document.cookie.matchAll(/(?:^|;\s*)googtrans=\/pt\/([a-z]+)/g);
+
+  for (const match of matches) {
+    if (SUPPORTED_LANGUAGES.includes(match[1])) return match[1];
+  }
+
+  return "pt";
+}
+
+function clearGoogleTranslateCookies() {
+  const expiredCookie =
+    "googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; SameSite=Lax";
+
+  // Remove o cookie sem Domain (host-only).
+  document.cookie = expiredCookie;
+
+  // O Google Translate pode criar o mesmo cookie no domínio atual ou num
+  // domínio superior (por exemplo, .exemplo.pt quando estamos em www.exemplo.pt).
+  const hostnameParts = window.location.hostname.split(".");
+  const domains = new Set();
+
+  if (hostnameParts.length > 1) {
+    domains.add(window.location.hostname);
+
+    for (let index = 1; index < hostnameParts.length - 1; index += 1) {
+      domains.add(hostnameParts.slice(index).join("."));
+    }
+  }
+
+  domains.forEach((domain) => {
+    document.cookie = `${expiredCookie}; domain=.${domain}`;
+  });
+}
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -15,9 +51,7 @@ export default function Navbar() {
 
   // Detecta a língua activa pelo cookie do Google Translate
   useEffect(() => {
-    const match = document.cookie.match(/googtrans=\/pt\/([a-z]+)/);
-    if (match) setLang(match[1]);
-    else setLang("pt");
+    setLang(getGoogleTranslateLanguage());
   }, []);
   const [darkMode, setDarkMode] = useState(false);
   const router = useRouter();
@@ -59,17 +93,17 @@ export default function Navbar() {
   };
 
   function switchLang(target) {
-    if (target === lang) return;
-    setLang(target);
+    if (!SUPPORTED_LANGUAGES.includes(target)) return;
 
-    if (target === "pt") {
-      // Limpar cookie → reload carrega página no original PT
-      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=.${location.hostname}`;
-    } else {
-      document.cookie = `googtrans=/pt/${target}; path=/`;
+    setLang(target);
+    clearGoogleTranslateCookies();
+
+    if (target !== "pt") {
+      document.cookie =
+        `googtrans=/pt/${target}; path=/; Max-Age=31536000; SameSite=Lax`;
     }
-    location.reload();
+
+    window.location.reload();
   }
 
   const navLinks = [
